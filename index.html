@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barber Station by Anmar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --bg-primary: #0F1113;
+    --bg-secondary: #1A1D21;
+    --bg-tertiary: #141618;
+    --text-primary: #E5E7EB;
+    --text-muted: #9CA3AF;
+    --text-dim: #6B7280;
+    --accent-red: #A32020;
+    --accent-red-hover: #BF2626;
+    --accent-silver: #C0C4C9;
+    --accent-silver-dim: #8A9099;
+    --accent-blue: #2F5D8C;
+    --border-subtle: rgba(192,196,201,0.08);
+    --border-medium: rgba(192,196,201,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, .bebas { font-family: 'Bebas Neue', sans-serif; }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg-primary); }
+  ::-webkit-scrollbar-thumb { background: var(--accent-silver-dim); border-radius: 2px; }
+
+  /* NAV */
+  .nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    height: 76px;
+    display: flex;
+    align-items: center;
+    padding: 0 40px;
+    transition: background 0.4s ease, backdrop-filter 0.4s ease;
+  }
+  .nav.scrolled {
+    background: rgba(15,17,19,0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .nav-inner {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+  .nav-logo img {
+    height: 48px;
+    width: 48px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 12px rgba(192,196,201,0.25));
+  }
+  .nav-brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    list-style: none;
+  }
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    transition: color 0.2s ease;
+    position: relative;
+  }
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 0; right: 0;
+    height: 1px;
+    background: var(--accent-red);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s ease;
+  }
+  .nav-links a:hover { color: var(--text-primary); }
+  .nav-links a:hover::after { transform: scaleX(1); }
+  .nav-cta {
+    background: var(--accent-red);
+    color: #fff !important;
+    padding: 10px 24px;
+    border-radius: 2px;
+    font-size: 11px !important;
+    letter-spacing: 2px !important;
+    font-weight: 600 !important;
+    transition: background 0.2s ease, transform 0.15s ease !important;
+  }
+  .nav-cta::after { display: none !important; }
+  .nav-cta:hover {
+    background: var(--accent-red-hover) !important;
+    color: #fff !important;
+    transform: translateY(-1px);
+  }
+  .nav-cta:active { transform: translateY(0); }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: var(--bg-primary);
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 80% at 70% 50%, rgba(163,32,32,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 20% 80%, rgba(47,93,140,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(192,196,201,0.03) 0%, transparent 50%);
+  }
+  .hero-barber-pole {
+    position: absolute;
+    right: 8%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60vh;
+    background: repeating-linear-gradient(
+      180deg,
+      #A32020 0px,
+      #A32020 20px,
+      #E5E7EB 20px,
+      #E5E7EB 40px,
+      #2F5D8C 40px,
+      #2F5D8C 60px,
+      #E5E7EB 60px,
+      #E5E7EB 80px
+    );
+    opacity: 0.25;
+    border-radius: 2px;
+  }
+  .hero-line-accent {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 40px;
+    height: 1px;
+    background: var(--accent-red);
+    opacity: 0.6;
+  }
+  .hero-inner {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 120px 40px 80px;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.2s forwards;
+  }
+  .hero-eyebrow-line {
+    width: 32px;
+    height: 1px;
+    background: var(--accent-red);
+  }
+  .hero-eyebrow-text {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent-red);
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 10vw, 140px);
+    line-height: 0.92;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeUp 0.9s ease 0.35s forwards;
+  }
+  .hero-title-accent {
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(192,196,201,0.35);
+    display: block;
+  }
+  .hero-subtitle {
+    font-size: 15px;
+    color: var(--text-muted);
+    max-width: 440px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+    margin-top: 24px;
+    opacity: 0;
+    animation: fadeUp 0.9s ease 0.5s forwards;
+  }
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.9s ease 0.65s forwards;
+  }
+  .btn-primary {
+    background: var(--accent-red);
+    color: #fff;
+    padding: 16px 32px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 2px;
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .btn-primary:hover {
+    background: var(--accent-red-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(163,32,32,0.3);
+  }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-ghost {
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s ease;
+    border-bottom: 1px solid var(--border-medium);
+    padding-bottom: 2px;
+  }
+  .btn-ghost:hover { color: var(--text-primary); border-bottom-color: var(--accent-silver-dim); }
+  .hero-stats {
+    display: flex;
+    gap: 48px;
+    margin-top: 80px;
+    padding-top: 48px;
+    border-top: 1px solid var(--border-subtle);
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.9s ease 0.8s forwards;
+  }
+  .hero-stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    line-height: 1;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+  }
+  .hero-stat-num span { color: var(--accent-red); }
+  .hero-stat-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+  .hero-image-frame {
+    position: absolute;
+    right: 4%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 380px;
+    height: 520px;
+    opacity: 0;
+    animation: fadeLeft 1s ease 0.4s forwards;
+  }
+  .hero-image-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(20%) brightness(0.75);
+    border-radius: 2px;
+  }
+  .hero-image-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 30%, rgba(15,17,19,0.8) 100%),
+                linear-gradient(to right, rgba(15,17,19,0.5) 0%, transparent 40%);
+    border-radius: 2px;
+  }
+  .hero-image-border {
+    position: absolute;
+    inset: -1px;
+    border: 1px solid var(--border-medium);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border-medium), transparent);
+  }
+
+  /* SECTION BASE */
+  section { position: relative; }
+  .section-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 96px 40px;
+  }
+  .section-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .section-eyebrow-line { width: 24px; height: 1px; background: var(--accent-red); }
+  .section-eyebrow-text {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent-red);
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(42px, 5vw, 72px);
+    line-height: 1;
+    letter-spacing: 1.5px;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+  }
+  .section-body {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.75;
+    max-width: 560px;
+  }
+
+  /* ABOUT */
+  .about-section { background: var(--bg-secondary); }
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .about-visual {
+    position: relative;
+    height: 480px;
+  }
+  .about-img-main {
+    width: 75%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(15%) brightness(0.8);
+    position: absolute;
+    right: 0;
+    border-radius: 2px;
+  }
+  .about-img-overlay {
+    position: absolute;
+    inset: 0;
+    right: 0;
+    background: linear-gradient(135deg, rgba(163,32,32,0.06), transparent 60%);
+    pointer-events: none;
+  }
+  .about-badge {
+    position: absolute;
+    bottom: 32px;
+    left: 0;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-medium);
+    padding: 20px 24px;
+    border-radius: 2px;
+    z-index: 2;
+  }
+  .about-badge-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 40px;
+    line-height: 1;
+    color: var(--accent-red);
+  }
+  .about-badge-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+  .about-content { padding-right: 20px; }
+  .about-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 40px;
+  }
+  .about-feature {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    padding: 20px;
+    border-radius: 2px;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  .about-feature:hover {
+    border-color: var(--border-medium);
+    transform: translateY(-2px);
+  }
+  .about-feature-icon {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 12px;
+    color: var(--accent-red);
+  }
+  .about-feature-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .about-feature-text {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* SERVICES */
+  .services-section { background: var(--bg-primary); }
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border-subtle);
+    border: 1px solid var(--border-subtle);
+    margin-top: 56px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .service-card {
+    background: var(--bg-primary);
+    padding: 32px 28px;
+    transition: background 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .service-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent-red);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+  .service-card:hover { background: var(--bg-secondary); }
+  .service-card:hover::before { transform: scaleX(1); }
+  .service-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+  .service-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    line-height: 1.1;
+  }
+  .service-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* GALLERY */
+  .gallery-section { background: var(--bg-secondary); }
+  .gallery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 48px;
+  }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: 260px 260px;
+    gap: 8px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .gallery-item {
+    position: relative;
+    overflow: hidden;
+    background: var(--bg-tertiary);
+  }
+  .gallery-item:first-child { grid-row: span 2; }
+  .gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(20%) brightness(0.75);
+    transition: transform 0.5s ease, filter 0.4s ease;
+  }
+  .gallery-item:hover img {
+    transform: scale(1.04);
+    filter: grayscale(0%) brightness(0.85);
+  }
+  .gallery-item-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(15,17,19,0.7) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .gallery-item:hover .gallery-item-overlay { opacity: 1; }
+
+  /* REVIEWS */
+  .reviews-section { background: var(--bg-primary); }
+  .reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 56px;
+  }
+  .review-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    padding: 32px;
+    border-radius: 2px;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+    position: relative;
+  }
+  .review-card::before {
+    content: '"';
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px;
+    line-height: 1;
+    color: rgba(163,32,32,0.12);
+    pointer-events: none;
+  }
+  .review-card:hover {
+    border-color: var(--border-medium);
+    transform: translateY(-4px);
+  }
+  .review-stars {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+  .star {
+    width: 12px;
+    height: 12px;
+    background: var(--accent-red);
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  }
+  .review-text {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.75;
+    margin-bottom: 24px;
+  }
+  .review-author {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 20px;
+  }
+  .review-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--accent-red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .review-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.3px;
+  }
+  .review-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+
+  /* HOURS */
+  .hours-section {
+    background: var(--bg-secondary);
+    position: relative;
+    overflow: hidden;
+  }
+  .hours-section::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(163,32,32,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hours-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 48px;
+    margin-top: 56px;
+  }
+  .hours-block-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--accent-silver);
+    margin-bottom: 20px;
+  }
+  .hours-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 14px;
+  }
+  .hours-day { color: var(--text-muted); }
+  .hours-time { color: var(--text-primary); font-weight: 500; }
+  .hours-time.closed { color: var(--text-dim); font-style: italic; }
+  .contact-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .contact-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--accent-red);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .contact-text {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .contact-text a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .contact-text a:hover { color: var(--text-primary); }
+
+  /* CTA */
+  .cta-section {
+    background: var(--bg-primary);
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+  }
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 50%, rgba(163,32,32,0.09) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cta-inner {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 120px 40px;
+    position: relative;
+    z-index: 1;
+  }
+  .cta-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent-red);
+    margin-bottom: 20px;
+  }
+  .cta-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(56px, 7vw, 96px);
+    line-height: 0.95;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+    margin-bottom: 24px;
+  }
+  .cta-sub {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 48px;
+  }
+  .cta-phone {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--accent-silver);
+    margin-top: 24px;
+    display: block;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .cta-phone:hover { color: var(--text-primary); }
+
+  /* FOOTER */
+  footer {
+    background: var(--bg-tertiary);
+    border-top: 1px solid var(--border-subtle);
+    padding: 48px 40px;
+  }
+  .footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  .footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+  .footer-logo img {
+    height: 40px;
+    width: 40px;
+    object-fit: contain;
+    filter: brightness(0.7) grayscale(30%);
+  }
+  .footer-brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+  }
+  .footer-copy {
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+  .footer-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+  }
+  .footer-links a {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-decoration: none;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    transition: color 0.2s ease;
+  }
+  .footer-links a:hover { color: var(--text-muted); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeLeft {
+    from { opacity: 0; transform: translate(24px, -50%); }
+    to { opacity: 1; transform: translate(0, -50%); }
+  }
+
+  /* INTERSECTION OBSERVER CLASSES */
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  /* WALK-IN TICKER */
+  .walkin-ticker {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    margin-bottom: 28px;
+    width: fit-content;
+    max-width: 480px;
+    position: relative;
+  }
+  .walkin-ticker::before,
+  .walkin-ticker::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 24px;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .walkin-ticker::before { left: 32px; background: linear-gradient(to right, var(--bg-primary), transparent); }
+  .walkin-ticker::after  { right: 0;  background: linear-gradient(to left,  var(--bg-primary), transparent); }
+  .walkin-ticker-label {
+    flex-shrink: 0;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--accent-red);
+    border: 1px solid var(--accent-red);
+    padding: 5px 10px;
+    margin-right: 16px;
+    white-space: nowrap;
+    position: relative;
+    z-index: 3;
+    background: var(--bg-primary);
+  }
+  .walkin-ticker-track {
+    display: flex;
+    gap: 0;
+    animation: ticker 14s linear infinite;
+    white-space: nowrap;
+  }
+  .walkin-ticker-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding-right: 32px;
+  }
+  .walkin-ticker-sep {
+    display: inline-block;
+    width: 3px;
+    height: 3px;
+    background: var(--accent-red);
+    border-radius: 50%;
+    margin-right: 32px;
+    flex-shrink: 0;
+    opacity: 0.6;
+    vertical-align: middle;
+  }
+  @keyframes ticker {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 1024px) {
+    .hero-image-frame { display: none; }
+    .hero-title { font-size: clamp(64px, 12vw, 120px); }
+    .about-grid { grid-template-columns: 1fr; gap: 48px; }
+    .about-visual { height: 320px; }
+    .services-grid { grid-template-columns: repeat(2, 1fr); }
+    .reviews-grid { grid-template-columns: 1fr 1fr; }
+    .hours-grid { grid-template-columns: 1fr; gap: 32px; }
+    .gallery-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+    .gallery-item:first-child { grid-row: span 1; }
+  }
+  @media (max-width: 768px) {
+    .nav { padding: 0 24px; }
+    .nav-links { display: none; }
+    .section-inner { padding: 64px 24px; }
+    .hero-inner { padding: 100px 24px 64px; }
+    .services-grid { grid-template-columns: 1fr; }
+    .reviews-grid { grid-template-columns: 1fr; }
+    .gallery-grid { grid-template-columns: 1fr; }
+    .about-features { grid-template-columns: 1fr; }
+    .hero-stats { gap: 32px; }
+    footer { padding: 40px 24px; }
+    .footer-inner { flex-direction: column; text-align: center; }
+    .cta-inner { padding: 80px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="navbar">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <img src="/mnt/user-data/uploads/1777825537055_image.png" alt="Barber Station Logo">
+      <span class="nav-brand">Barber Station</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#reviews">Reviews</a></li>
+      <li><a href="#contact">Hours</a></li>
+      <li><a href="tel:5199694920" class="nav-cta">Book Now</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-barber-pole"></div>
+  <div class="hero-inner">
+    <div style="opacity:0;animation:fadeUp 0.7s ease 0.1s forwards">
+      <div class="walkin-ticker">
+        <span class="walkin-ticker-label">Open</span>
+        <div class="walkin-ticker-track">
+          <span class="walkin-ticker-item">Walk-Ins Welcomed<span class="walkin-ticker-sep"></span></span>
+          <span class="walkin-ticker-item">Mon–Sat 9AM–8PM<span class="walkin-ticker-sep"></span></span>
+          <span class="walkin-ticker-item">Sun 10AM–7PM<span class="walkin-ticker-sep"></span></span>
+          <span class="walkin-ticker-item">Windsor, Ontario<span class="walkin-ticker-sep"></span></span>
+          <span class="walkin-ticker-item">Walk-Ins Welcomed<span class="walkin-ticker-sep"></span></span>
+          <span class="walkin-ticker-item">Mon–Sat 9AM–8PM<span class="walkin-ticker-sep"></span></span>
+          <span class="walkin-ticker-item">Sun 10AM–7PM<span class="walkin-ticker-sep"></span></span>
+          <span class="walkin-ticker-item">Windsor, Ontario<span class="walkin-ticker-sep"></span></span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-eyebrow">
+      <div class="hero-eyebrow-line"></div>
+      <span class="hero-eyebrow-text">Windsor, Ontario · Est. 2025</span>
+    </div>
+    <h1 class="hero-title">
+      Barber
+      <span class="hero-title-accent">Station</span>
+    </h1>
+    <p class="hero-subtitle">Premium barbershop experience by Anmar. Where precision meets craft — every cut, every time.</p>
+    <div class="hero-actions">
+      <a href="tel:5199694920" class="btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4a2 2 0 0 1 1.98-2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Call to Book
+      </a>
+      <a href="#services" class="btn-ghost">
+        View Services
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-num">500<span>+</span></div>
+        <div class="hero-stat-label">Satisfied Clients</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">20<span>+</span></div>
+        <div class="hero-stat-label">Services Offered</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">5<span>★</span></div>
+        <div class="hero-stat-label">Google Rating</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">1</div>
+        <div class="hero-stat-label">Premium Shop</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-image-frame">
+    <img src="https://placehold.co/380x520/1A1D21/444" alt="Barbershop">
+    <div class="hero-image-overlay"></div>
+    <div class="hero-image-border"></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ABOUT -->
+<section class="about-section" id="about">
+  <div class="section-inner">
+    <div class="about-grid">
+      <div class="about-visual reveal">
+        <img src="https://placehold.co/380x480/111315/333" alt="Barber at work" class="about-img-main">
+        <div class="about-img-overlay"></div>
+        <div class="about-badge">
+          <div class="about-badge-num">2025</div>
+          <div class="about-badge-label">Est. Windsor, ON</div>
+        </div>
+      </div>
+      <div class="about-content">
+        <div class="section-eyebrow reveal">
+          <div class="section-eyebrow-line"></div>
+          <span class="section-eyebrow-text">About Anmar</span>
+        </div>
+        <h2 class="section-title reveal reveal-delay-1">Precision<br>Is The Art</h2>
+        <p class="section-body reveal reveal-delay-2">Anmar brings years of expertise and a genuine passion for the craft to every client. More than a haircut — it's an experience built on trust, precision, and personal care. Clean shop, great coffee, and cuts that speak for themselves.</p>
+        <div class="about-features">
+          <div class="about-feature reveal reveal-delay-1">
+            <svg class="about-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <div class="about-feature-title">Master Precision</div>
+            <div class="about-feature-text">Every line clean, every fade seamless</div>
+          </div>
+          <div class="about-feature reveal reveal-delay-2">
+            <svg class="about-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <div class="about-feature-title">No Rush Policy</div>
+            <div class="about-feature-text">Your cut gets the time it deserves</div>
+          </div>
+          <div class="about-feature reveal reveal-delay-3">
+            <svg class="about-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <div class="about-feature-title">Client First</div>
+            <div class="about-feature-text">Treated like a friend, not a number</div>
+          </div>
+          <div class="about-feature reveal reveal-delay-4">
+            <svg class="about-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <div class="about-feature-title">Premium Space</div>
+            <div class="about-feature-text">Modern, clean, and welcoming shop</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SERVICES -->
+<section class="services-section" id="services">
+  <div class="section-inner">
+    <div class="section-eyebrow reveal">
+      <div class="section-eyebrow-line"></div>
+      <span class="section-eyebrow-text">What We Offer</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:0;">
+      <h2 class="section-title reveal reveal-delay-1" style="margin-bottom:0;">Our Services</h2>
+      <p class="section-body reveal reveal-delay-2" style="max-width:380px;font-size:14px;">From classic cuts to hot towel shaves — every service delivered with expert precision.</p>
+    </div>
+    <div class="services-grid reveal">
+      <div class="service-card">
+        <div class="service-num">01</div>
+        <div class="service-name">Fade Cut</div>
+        <div class="service-desc">Seamless skin or shadow fades with sharp clean lines</div>
+      </div>
+      <div class="service-card">
+        <div class="service-num">02</div>
+        <div class="service-name">Custom Cut</div>
+        <div class="service-desc">Tailored to your style, face shape, and lifestyle</div>
+      </div>
+      <div class="service-card">
+        <div class="service-num">03</div>
+        <div class="service-name">Beard Trim</div>
+        <div class="service-desc">Defined edges, sculpted lines, groomed to perfection</div>
+      </div>
+      <div class="service-card">
+        <div class="service-num">04</div>
+        <div class="service-name">Hot Towel Shave</div>
+        <div class="service-desc">Classic straight razor shave with warm towel treatment</div>
+      </div>
+      <div class="service-card">
+        <div class="service-num">05</div>
+        <div class="service-name">Kids' Cuts</div>
+        <div class="service-desc">Patient, friendly service for the little ones</div>
+      </div>
+      <div class="service-card">
+        <div class="service-num">06</div>
+        <div class="service-name">Hair Coloring</div>
+        <div class="service-desc">Full color, highlights, grey blending and more</div>
+      </div>
+      <div class="service-card">
+        <div class="service-num">07</div>
+        <div class="service-name">Head Shave</div>
+        <div class="service-desc">Smooth, clean head shave with premium finish</div>
+      </div>
+      <div class="service-card">
+        <div class="service-num">08</div>
+        <div class="service-name">Eyebrow Trim</div>
+        <div class="service-desc">Clean up and define brow shape for a polished look</div>
+      </div>
+      <div class="service-card">
+        <div class="service-num">09</div>
+        <div class="service-name">Scissor Cut</div>
+        <div class="service-desc">Precision scissor work for texture and shape</div>
+      </div>
+      <div class="service-card">
+        <div class="service-num">10</div>
+        <div class="service-name">Waxing</div>
+        <div class="service-desc">Clean professional waxing for face and ear areas</div>
+      </div>
+      <div class="service-card">
+        <div class="service-num">11</div>
+        <div class="service-name">Shape Up</div>
+        <div class="service-desc">Crisp hairline cleanup and shape restoration</div>
+      </div>
+      <div class="service-card">
+        <div class="service-num">12</div>
+        <div class="service-name">Shampoo & Condition</div>
+        <div class="service-desc">Refreshing wash and deep conditioning treatment</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- GALLERY -->
+<section class="gallery-section" id="gallery">
+  <div class="section-inner">
+    <div class="gallery-header">
+      <div>
+        <div class="section-eyebrow reveal">
+          <div class="section-eyebrow-line"></div>
+          <span class="section-eyebrow-text">The Work</span>
+        </div>
+        <h2 class="section-title reveal reveal-delay-1" style="margin-bottom:0;">Shop & Craft</h2>
+      </div>
+      <p class="section-body reveal reveal-delay-2" style="max-width:300px;font-size:14px;text-align:right;">Clean shop. Precise cuts. Consistent results.</p>
+    </div>
+    <div class="gallery-grid reveal">
+      <div class="gallery-item">
+        <img src="https://placehold.co/600x530/111315/2a2a2a" alt="Barber work">
+        <div class="gallery-item-overlay"></div>
+      </div>
+      <div class="gallery-item">
+        <img src="https://placehold.co/400x260/131618/2a2a2a" alt="Shop interior">
+        <div class="gallery-item-overlay"></div>
+      </div>
+      <div class="gallery-item">
+        <img src="https://placehold.co/400x260/151719/2a2a2a" alt="Haircut result">
+        <div class="gallery-item-overlay"></div>
+      </div>
+      <div class="gallery-item">
+        <img src="https://placehold.co/400x260/121416/2a2a2a" alt="Beard trim">
+        <div class="gallery-item-overlay"></div>
+      </div>
+      <div class="gallery-item">
+        <img src="https://placehold.co/400x260/141618/2a2a2a" alt="Barbershop tools">
+        <div class="gallery-item-overlay"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- REVIEWS -->
+<section class="reviews-section" id="reviews">
+  <div class="section-inner">
+    <div class="section-eyebrow reveal">
+      <div class="section-eyebrow-line"></div>
+      <span class="section-eyebrow-text">Client Reviews</span>
+    </div>
+    <h2 class="section-title reveal reveal-delay-1">What They Say</h2>
+    <div class="reviews-grid">
+      <div class="review-card reveal reveal-delay-1">
+        <div class="review-stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div>
+        <p class="review-text">Anmar is hands down the best barber in Windsor. His skill, precision, and attention to detail are on another level — every cut and beard trim comes out flawless. Clean, classy, and professional.</p>
+        <div class="review-author">
+          <div class="review-avatar">JA</div>
+          <div>
+            <div class="review-name">Verified Client</div>
+            <div class="review-label">Google Review · 5 Stars</div>
+          </div>
+        </div>
+      </div>
+      <div class="review-card reveal reveal-delay-2">
+        <div class="review-stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div>
+        <p class="review-text">Clean, sharp cuts every time. He really pays attention to detail. The shop has a great vibe, never feel rushed and always leave happy. Easily one of the best barbers in Windsor.</p>
+        <div class="review-author">
+          <div class="review-avatar">MK</div>
+          <div>
+            <div class="review-name">Verified Client</div>
+            <div class="review-label">Google Review · 5 Stars</div>
+          </div>
+        </div>
+      </div>
+      <div class="review-card reveal reveal-delay-3">
+        <div class="review-stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div>
+        <p class="review-text">Good coffee, great vibes, and a clean cut every time. The space is super clean, modern, and welcoming. Prices are fair, staff are friendly. You feel comfortable the moment you walk in.</p>
+        <div class="review-author">
+          <div class="review-avatar">RB</div>
+          <div>
+            <div class="review-name">Verified Client</div>
+            <div class="review-label">Google Review · 5 Stars</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOURS & CONTACT -->
+<section class="hours-section" id="contact">
+  <div class="section-inner">
+    <div class="section-eyebrow reveal">
+      <div class="section-eyebrow-line"></div>
+      <span class="section-eyebrow-text">Find Us</span>
+    </div>
+    <h2 class="section-title reveal reveal-delay-1">Hours & Location</h2>
+    <div class="hours-grid">
+      <div class="reveal reveal-delay-1">
+        <div class="hours-block-title">Operating Hours</div>
+        <div class="hours-row"><span class="hours-day">Monday</span><span class="hours-time">9:00 AM – 8:00 PM</span></div>
+        <div class="hours-row"><span class="hours-day">Tuesday</span><span class="hours-time">9:00 AM – 8:00 PM</span></div>
+        <div class="hours-row"><span class="hours-day">Wednesday</span><span class="hours-time">9:00 AM – 8:00 PM</span></div>
+        <div class="hours-row"><span class="hours-day">Thursday</span><span class="hours-time">9:00 AM – 8:00 PM</span></div>
+        <div class="hours-row"><span class="hours-day">Friday</span><span class="hours-time">9:00 AM – 8:00 PM</span></div>
+        <div class="hours-row"><span class="hours-day">Saturday</span><span class="hours-time">9:00 AM – 8:00 PM</span></div>
+        <div class="hours-row"><span class="hours-day">Sunday</span><span class="hours-time">10:00 AM – 7:00 PM</span></div>
+      </div>
+      <div class="reveal reveal-delay-2">
+        <div class="hours-block-title">Contact</div>
+        <div class="contact-item">
+          <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4a2 2 0 0 1 1.98-2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <div class="contact-text"><a href="tel:5199694920">(519) 969-4920</a></div>
+        </div>
+        <div class="contact-item">
+          <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div class="contact-text">3822 McGregor Blvd<br>Windsor, Ontario N9G 1X1</div>
+        </div>
+        <div class="contact-item" style="margin-top:8px;">
+          <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          <div class="contact-text">Walk-ins always welcomed<br>No appointment required</div>
+        </div>
+      </div>
+      <div class="reveal reveal-delay-3">
+        <div class="hours-block-title">Get Directions</div>
+        <div style="width:100%;height:200px;background:var(--bg-primary);border:1px solid var(--border-subtle);border-radius:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-silver-dim)" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px;">3822 McGregor Blvd</span>
+          <a href="https://maps.google.com/?q=3822+McGregor+Blvd+Windsor+Ontario" target="_blank" class="btn-primary" style="font-size:10px;padding:10px 20px;margin-top:4px;">Open in Maps</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <div class="cta-eyebrow reveal">Walk-Ins Welcome · No Appointment Needed</div>
+    <h2 class="cta-title reveal reveal-delay-1">Ready For<br>Your Cut?</h2>
+    <p class="cta-sub reveal reveal-delay-2">Come in or call ahead. Anmar and the team at Barber Station are ready to take care of you.</p>
+    <a href="tel:5199694920" class="btn-primary reveal reveal-delay-3" style="display:inline-flex;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4a2 2 0 0 1 1.98-2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      Call (519) 969-4920
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <a href="#" class="footer-logo">
+      <img src="/mnt/user-data/uploads/1777825537055_image.png" alt="Barber Station">
+      <span class="footer-brand">Barber Station by Anmar</span>
+    </a>
+    <ul class="footer-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#contact">Hours</a></li>
+    </ul>
+    <p class="footer-copy">© 2025 Barber Station by Anmar · Windsor, ON</p>
+  </div>
+</footer>
+
+<script>
+  // Navbar scroll
+  const nav = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  reveals.forEach(el => observer.observe(el));
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+</body>
+</html>
